@@ -28,9 +28,5 @@ to the target and is injected into memory and leaves no  traces  on  the
 
 disk. This tool is for pentesting only, not for controlling peoples devices
 
-[Target]                    --->                  [NES Server(you)]
-runs payload       payload points to server ip     listens for target
-execute commands               <---                     send commands
-
 
 NOT MEANT FOR USING ON COMPUTERS THAT ARE'NT YOURS, I DO NOT TAKE RESPONSABLITY FOR ANY DAMAGE YOU MAY CAUSE
