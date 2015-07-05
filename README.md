@@ -1,6 +1,6 @@
 # neoneggshell
 
-NES is an iOS and OSX command shell creation tool written in python
+NES is an OSX and Jailbroken IOS command shell creation tool written in python
 
 This tool creates an command line session with extra functionality like
 
